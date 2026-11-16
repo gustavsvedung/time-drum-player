@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e8e6df">
+  <title>time</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="panel">
+    <header class="head">
+      <span class="mark">time</span>
+      <span class="led" id="led" aria-hidden="true"></span>
+    </header>
+
+    <section class="readout" aria-live="off">
+      <output class="bpm" id="bpm" for="tempo">110</output>
+      <span class="unit">bpm</span>
+    </section>
+
+    <section class="controls">
+      <label class="fader">
+        <span class="label">tempo</span>
+        <input type="range" id="tempo" min="40" max="180" step="1" value="110">
+      </label>
+
+      <label class="fader">
+        <span class="label">ad lib</span>
+        <input type="range" id="adlib" min="0" max="100" step="1" value="0">
+      </label>
+
+      <button class="switch" id="kit" type="button" role="switch" aria-checked="true" aria-label="Electronic kit">
+        <span class="label side-a">acoustic</span>
+        <span class="track" aria-hidden="true"><span class="knob"></span></span>
+        <span class="label side-b">electronic</span>
+      </button>
+    </section>
+
+    <button class="start" id="start" type="button" aria-pressed="false" aria-label="Start">
+      <span class="glyph" aria-hidden="true"></span>
+    </button>
+  </main>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
