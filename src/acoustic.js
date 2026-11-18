@@ -8,19 +8,20 @@
 const SAMPLE_ROOT = 'samples/';
 
 // level: mix trim           close/oh: microphone blend
-// maxLen: seconds kept      damp: [hold, decay time constant] towel-style damping
+// maxLen: seconds kept      damp: [hold, decay time constant] towel-style damping / shortened ring
 // room: reverb send         lowpass: per-voice tone (Hz)
+// pan: close-mic position, -1 left .. 1 right, from the drummer's seat (matches the overheads)
 const VOICES = {
-  kick:      { level: 1.0,  close: 1.0, oh: 0.45, maxLen: 1.0, damp: [0.09, 0.11], room: 0.05, lowpass: 6500 },
-  snare:     { level: 1.9,  close: 1.0, oh: 0.8,  maxLen: 1.2, damp: [0.07, 0.11], room: 0.24, lowpass: 8500 },
-  rim:       { level: 2.6,  close: 1.0, oh: 0.7,  maxLen: 0.8, damp: [0.05, 0.08], room: 0.26 },
-  hatClosed: { level: 1.4,  close: 1.0, oh: 0.45, maxLen: 0.6, room: 0.02 },
-  hatOpen:   { level: 0.95, close: 1.0, oh: 0.45, maxLen: 2.5, room: 0.02 },
-  tomHigh:   { level: 0.85, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.1, 0.16], room: 0.2 },
-  tomMid:    { level: 0.95, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.1, 0.18], room: 0.2 },
-  tomLow:    { level: 0.85, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.12, 0.2], room: 0.18 },
-  ride:      { level: 0.95, close: 0.7, oh: 1.0,  maxLen: 4.5, room: 0.12 },
-  crash:     { level: 1.0,  close: 0.6, oh: 1.0,  maxLen: 6.5, room: 0.14 },
+  kick:      { level: 1.0,  close: 1.0, oh: 0.45, maxLen: 1.0, damp: [0.09, 0.11], room: 0.05, lowpass: 6500, pan: 0 },
+  snare:     { level: 1.9,  close: 1.0, oh: 0.8,  maxLen: 1.2, damp: [0.07, 0.11], room: 0.24, lowpass: 8500, pan: -0.05 },
+  rim:       { level: 2.6,  close: 1.0, oh: 0.7,  maxLen: 0.8, damp: [0.05, 0.08], room: 0.26, pan: -0.05 },
+  hatClosed: { level: 0.75, close: 1.0, oh: 0.4,  maxLen: 0.5, damp: [0.05, 0.06], room: 0.03, pan: -0.45 },
+  hatOpen:   { level: 0.68, close: 1.0, oh: 0.4,  maxLen: 1.2, damp: [0.18, 0.18], room: 0.03, pan: -0.45 },
+  tomHigh:   { level: 0.85, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.1, 0.16], room: 0.2, pan: -0.25 },
+  tomMid:    { level: 0.95, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.1, 0.18], room: 0.2, pan: 0.15 },
+  tomLow:    { level: 0.72, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.12, 0.2], room: 0.18, pan: 0.45 },
+  ride:      { level: 0.75, close: 1.0, oh: 0.4,  maxLen: 5.0, damp: [1.2, 1.6], room: 0.04, pan: 0.5 },
+  crash:     { level: 0.52, close: 1.0, oh: 0.3,  maxLen: 3.0, damp: [0.35, 0.5], room: 0.03, pan: -0.4 },
 };
 
 // Voices the electronic patterns use that a drum kit doesn't have
@@ -65,19 +66,24 @@ function roomImpulse(ctx, seconds = 0.5, rt60 = 0.38) {
 }
 
 /** Blend the mono close mic and stereo overheads into one trimmed stereo buffer. */
+const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+
 function mixTake(ctx, close, oh, spec) {
   const sr = close.sampleRate;
   const len = Math.min(close.length, oh.length, Math.floor(spec.maxLen * sr));
   const out = ctx.createBuffer(2, len, sr);
   const c = close.getChannelData(0);
   const fade = Math.floor(FADE_OUT * sr);
+  // Equal-power pan of the mono close mic; unity gain in the centre.
+  const angle = ((clamp(spec.pan ?? 0, -1, 1) + 1) * Math.PI) / 4;
+  const closeGain = [Math.cos(angle) * Math.SQRT2 * spec.close, Math.sin(angle) * Math.SQRT2 * spec.close];
   let peak = 0;
   for (let ch = 0; ch < 2; ch++) {
     const o = oh.getChannelData(Math.min(ch, oh.numberOfChannels - 1));
     const d = out.getChannelData(ch);
     for (let i = 0; i < len; i++) {
       const tail = i > len - fade ? (len - i) / fade : 1;
-      d[i] = (c[i] * spec.close + o[i] * spec.oh) * tail;
+      d[i] = (c[i] * closeGain[ch] + o[i] * spec.oh) * tail;
       const a = Math.abs(d[i]);
       if (a > peak) peak = a;
     }
