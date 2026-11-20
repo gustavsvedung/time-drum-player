@@ -18,7 +18,9 @@ const VOICES = {
   snare:     { level: 1.9,  close: 1.0, oh: 0.8,  maxLen: 1.2, damp: [0.07, 0.11], room: 0.24, lowpass: 8500, pan: -0.05 },
   rim:       { level: 2.6,  close: 1.0, oh: 0.7,  maxLen: 0.8, damp: [0.05, 0.08], room: 0.26, pan: -0.05 },
   hatClosed: { level: 0.54, close: 1.0, oh: 0.55, maxLen: 0.5, damp: [0.05, 0.06], room: 0.03, pan: -0.45 },
-  hatOpen:   { level: 0.5,  close: 1.0, oh: 0.55, maxLen: 1.2, damp: [0.18, 0.18], room: 0.03, pan: -0.45 },
+  // Open hat recordings to choose from with samples: 'hatQuarter' (quarter open: tight, bright "tss"),
+  // 'hatOpen' (half open: darker, washier) or 'hatWide' (fully open: big and long, try level 0.55)
+  hatOpen:   { level: 0.45, close: 1.0, oh: 0.55, maxLen: 1.2, damp: [0.18, 0.18], room: 0.03, pan: -0.45, samples: 'hatQuarter' },
   tomHigh:   { level: 0.85, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.1, 0.16], room: 0.2, pan: -0.25 },
   tomMid:    { level: 0.95, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.1, 0.18], room: 0.2, pan: 0.15 },
   tomLow:    { level: 0.72, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.12, 0.2], room: 0.18, pan: 0.45 },

@@ -22,6 +22,8 @@ KIT = {
     "rim":       ("snare_14/sidestick",  "sn_ss",     "top",  [2, 3, 4],           [1, 2, 3]),
     "hatClosed": ("hihat_14/tc",         "ht_tc",     "cl",   [2, 4, 6, 7, 8],     [1, 2, 3]),
     "hatOpen":   ("hihat_14/ho",         "ht_ho",     "cl",   [2, 3, 4],           [1, 2]),
+    "hatQuarter":("hihat_14/qo",         "ht_qo",     "cl",   [2, 3, 4],           [1, 2]),
+    "hatWide":   ("hihat_14/open",       "ht_open",   "cl",   [2, 4, 5],           [1, 2]),
     "tomHigh":   ("tom_14/center",       "t14",       "cl",   [2, 4, 6],           [1, 2]),
     "tomMid":    ("tom_15/center",       "t15",       "cl",   [2, 4, 6],           [1, 2]),
     "tomLow":    ("tom_18/center",       "t18",       "cl",   [3, 6, 8],           [1, 2]),

@@ -305,6 +305,70 @@
    }
   ]
  ],
+ "hatQuarter": [
+  [
+   {
+    "close": "hatQuarter/close_v02_r1.flac",
+    "oh": "hatQuarter/oh_v02_r1.flac"
+   },
+   {
+    "close": "hatQuarter/close_v02_r2.flac",
+    "oh": "hatQuarter/oh_v02_r2.flac"
+   }
+  ],
+  [
+   {
+    "close": "hatQuarter/close_v03_r1.flac",
+    "oh": "hatQuarter/oh_v03_r1.flac"
+   },
+   {
+    "close": "hatQuarter/close_v03_r2.flac",
+    "oh": "hatQuarter/oh_v03_r2.flac"
+   }
+  ],
+  [
+   {
+    "close": "hatQuarter/close_v04_r1.flac",
+    "oh": "hatQuarter/oh_v04_r1.flac"
+   },
+   {
+    "close": "hatQuarter/close_v04_r2.flac",
+    "oh": "hatQuarter/oh_v04_r2.flac"
+   }
+  ]
+ ],
+ "hatWide": [
+  [
+   {
+    "close": "hatWide/close_v02_r1.flac",
+    "oh": "hatWide/oh_v02_r1.flac"
+   },
+   {
+    "close": "hatWide/close_v02_r2.flac",
+    "oh": "hatWide/oh_v02_r2.flac"
+   }
+  ],
+  [
+   {
+    "close": "hatWide/close_v04_r1.flac",
+    "oh": "hatWide/oh_v04_r1.flac"
+   },
+   {
+    "close": "hatWide/close_v04_r2.flac",
+    "oh": "hatWide/oh_v04_r2.flac"
+   }
+  ],
+  [
+   {
+    "close": "hatWide/close_v05_r1.flac",
+    "oh": "hatWide/oh_v05_r1.flac"
+   },
+   {
+    "close": "hatWide/close_v05_r2.flac",
+    "oh": "hatWide/oh_v05_r2.flac"
+   }
+  ]
+ ],
  "tomHigh": [
   [
    {
