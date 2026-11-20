@@ -464,5 +464,37 @@
     "oh": "crash/oh_v05_r2.flac"
    }
   ]
+ ],
+ "crash2": [
+  [
+   {
+    "close": "crash2/close_v03_r1.flac",
+    "oh": "crash2/oh_v03_r1.flac"
+   },
+   {
+    "close": "crash2/close_v03_r2.flac",
+    "oh": "crash2/oh_v03_r2.flac"
+   }
+  ],
+  [
+   {
+    "close": "crash2/close_v05_r1.flac",
+    "oh": "crash2/oh_v05_r1.flac"
+   },
+   {
+    "close": "crash2/close_v05_r2.flac",
+    "oh": "crash2/oh_v05_r2.flac"
+   }
+  ],
+  [
+   {
+    "close": "crash2/close_v06_r1.flac",
+    "oh": "crash2/oh_v06_r1.flac"
+   },
+   {
+    "close": "crash2/close_v06_r2.flac",
+    "oh": "crash2/oh_v06_r2.flac"
+   }
+  ]
  ]
 }

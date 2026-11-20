@@ -27,6 +27,7 @@ KIT = {
     "tomLow":    ("tom_18/center",       "t18",       "cl",   [3, 6, 8],           [1, 2]),
     "ride":      ("ride_22/rd",          "rd",        "cl",   [3, 5, 7, 9],        [1, 2]),
     "crash":     ("crash_17/cr",         "cr",        "cl",   [3, 5],              [1, 2]),
+    "crash2":    ("crash_sizzle_17/cr",  "crs",       "cl",   [3, 5, 6],           [1, 2]),
 }
 
 
@@ -48,8 +49,18 @@ def main():
             manifest[voice].append(layer)
     jobs.append((BASE + "LICENSE", os.path.join(OUT, "LICENSE")))
 
+    # Only fetch what isn't already here
+    def have(path):
+        try:
+            with open(path, "rb") as f:
+                return path.endswith("LICENSE") or f.read(4) == b"fLaC"
+        except OSError:
+            return False
+    todo = [job for job in jobs if not have(job[1])]
+    print(f"{len(todo)} files to download")
+
     with tempfile.NamedTemporaryFile("w", suffix=".cfg", delete=False) as cfg:
-        for url, path in jobs:
+        for url, path in todo:
             cfg.write(f'url = "{url}"\noutput = "{path}"\n')
     result = subprocess.run(
         ["curl", "--parallel", "--parallel-max", "8", "--fail", "--silent", "--show-error",

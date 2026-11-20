@@ -11,17 +11,24 @@ const SAMPLE_ROOT = 'samples/';
 // maxLen: seconds kept      damp: [hold, decay time constant] towel-style damping / shortened ring
 // room: reverb send         lowpass: per-voice tone (Hz)
 // pan: close-mic position, -1 left .. 1 right, from the drummer's seat (matches the overheads)
+// samples: borrow another voice's recordings   rate: playback speed (below 1 = lower and longer)
+// sustain: [from s, dB per s, max dB] lifts the tail so the cymbal decays more slowly
 const VOICES = {
   kick:      { level: 1.0,  close: 1.0, oh: 0.45, maxLen: 1.0, damp: [0.09, 0.11], room: 0.05, lowpass: 6500, pan: 0 },
   snare:     { level: 1.9,  close: 1.0, oh: 0.8,  maxLen: 1.2, damp: [0.07, 0.11], room: 0.24, lowpass: 8500, pan: -0.05 },
   rim:       { level: 2.6,  close: 1.0, oh: 0.7,  maxLen: 0.8, damp: [0.05, 0.08], room: 0.26, pan: -0.05 },
-  hatClosed: { level: 0.75, close: 1.0, oh: 0.4,  maxLen: 0.5, damp: [0.05, 0.06], room: 0.03, pan: -0.45 },
-  hatOpen:   { level: 0.68, close: 1.0, oh: 0.4,  maxLen: 1.2, damp: [0.18, 0.18], room: 0.03, pan: -0.45 },
+  hatClosed: { level: 0.54, close: 1.0, oh: 0.55, maxLen: 0.5, damp: [0.05, 0.06], room: 0.03, pan: -0.45 },
+  hatOpen:   { level: 0.5,  close: 1.0, oh: 0.55, maxLen: 1.2, damp: [0.18, 0.18], room: 0.03, pan: -0.45 },
   tomHigh:   { level: 0.85, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.1, 0.16], room: 0.2, pan: -0.25 },
   tomMid:    { level: 0.95, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.1, 0.18], room: 0.2, pan: 0.15 },
   tomLow:    { level: 0.72, close: 1.0, oh: 0.7,  maxLen: 1.8, damp: [0.12, 0.2], room: 0.18, pan: 0.45 },
-  ride:      { level: 0.75, close: 1.0, oh: 0.4,  maxLen: 5.0, damp: [1.2, 1.6], room: 0.04, pan: 0.5 },
-  crash:     { level: 0.52, close: 1.0, oh: 0.3,  maxLen: 3.0, damp: [0.35, 0.5], room: 0.03, pan: -0.4 },
+  ride:      { level: 0.4, close: 1.0, oh: 0.4,  maxLen: 5.0, damp: [1.1, 1.5], room: 0.04, pan: 0.5 },
+  crash:     { level: 0.6, close: 1.0, oh: 0.3,  maxLen: 3.0, damp: [0.35, 0.5], room: 0.03, pan: -0.4 },
+  // The slow-groove crash: the same cymbal played lower and left to hang over the bar
+  crashLong: { level: 0.45,close: 1.0, oh: 0.8,  maxLen: 8.0, damp: [3.5, 1.5], room: 0.05, lowpass: 7000, pan: -0.4, samples: 'crash', rate: 0.6, sustain: [0.25, 5, 10] },
+  // Second cymbal: a 17" sizzle crash on the drummer's right. Its rivets keep it ringing on their own.
+  crash2:     { level: 0.25, close: 1.0, oh: 0.3,  maxLen: 3.5, damp: [0.5, 0.6], room: 0.03, pan: 0.3 },
+  crashLong2: { level: 0.26,close: 1.0, oh: 0.8,  maxLen: 8.0, damp: [3.5, 1.5], room: 0.05, lowpass: 7000, pan: 0.3, samples: 'crash2', rate: 0.65, sustain: [0.25, 4, 8] },
 };
 
 // Voices the electronic patterns use that a drum kit doesn't have
@@ -74,6 +81,15 @@ function mixTake(ctx, close, oh, spec) {
   const out = ctx.createBuffer(2, len, sr);
   const c = close.getChannelData(0);
   const fade = Math.floor(FADE_OUT * sr);
+  let lift = null;
+  if (spec.sustain) {
+    const [from, dbPerSec, maxDb] = spec.sustain;
+    lift = new Float32Array(len);
+    for (let i = 0; i < len; i++) {
+      const db = Math.min(maxDb, Math.max(0, i / sr - from) * dbPerSec);
+      lift[i] = 10 ** (db / 20);
+    }
+  }
   // Equal-power pan of the mono close mic; unity gain in the centre.
   const angle = ((clamp(spec.pan ?? 0, -1, 1) + 1) * Math.PI) / 4;
   const closeGain = [Math.cos(angle) * Math.SQRT2 * spec.close, Math.sin(angle) * Math.SQRT2 * spec.close];
@@ -82,7 +98,7 @@ function mixTake(ctx, close, oh, spec) {
     const o = oh.getChannelData(Math.min(ch, oh.numberOfChannels - 1));
     const d = out.getChannelData(ch);
     for (let i = 0; i < len; i++) {
-      const tail = i > len - fade ? (len - i) / fade : 1;
+      const tail = (i > len - fade ? (len - i) / fade : 1) * (lift ? lift[i] : 1);
       d[i] = (c[i] * closeGain[ch] + o[i] * spec.oh) * tail;
       const a = Math.abs(d[i]);
       if (a > peak) peak = a;
@@ -183,9 +199,9 @@ export function createAcousticKit(ctx, out) {
         }
       }
     };
-    await Promise.all(Object.entries(manifest).map(async ([voice, layers]) => {
-      const spec = VOICES[voice];
-      if (!spec) return;
+    await Promise.all(Object.entries(VOICES).map(async ([voice, spec]) => {
+      const layers = manifest[spec.samples ?? voice];
+      if (!layers) return;
       const loaded = await Promise.all(layers.map(async (takes) => {
         const mixed = await Promise.all(takes.map(async (take) => {
           const [close, oh] = await Promise.all([decode(take.close), decode(take.oh)]);
@@ -229,7 +245,7 @@ export function createAcousticKit(ctx, out) {
 
     const src = ctx.createBufferSource();
     src.buffer = layer.takes[take].buffer;
-    src.playbackRate.value = 1 + (Math.random() - 0.5) * 0.008;
+    src.playbackRate.value = (spec.rate ?? 1) * (1 + (Math.random() - 0.5) * 0.008);
     const g = ctx.createGain();
     g.gain.setValueAtTime(level, time);
     src.connect(g).connect(strips[voice]);

@@ -68,6 +68,8 @@ export function createPerformer(pattern, rnd = Math.random) {
   let barIndex = -1;
   let rideSwap = false;
   let pendingCrash = false;
+  let lastCrashBar = -99;
+  let lastCymbal = 1; // which of the two crash cymbals was hit last
   let plan = null;
 
   // --- fills -----------------------------------------------------------------
@@ -214,14 +216,27 @@ export function createPerformer(pattern, rnd = Math.random) {
 
   // --- bar planning ------------------------------------------------------------
 
-  function planBar(a) {
+  // Below this tempo, acoustic grooves mark their phrases with a long, low crash.
+  const SLOW_CRASH_BPM = 85;
+
+  function planBar(a, bpm) {
     const pos = barIndex % 8;
+    const slow = acoustic && bpm < SLOW_CRASH_BPM;
     // How much a fill "belongs" at the end of this bar: 8-bar ends most, then 4, then 2.
     const weight = pos === 7 ? 1 : pos === 3 ? 0.7 : pos % 2 === 1 ? 0.35 : 0.15;
     const cap = weight >= 0.7 ? 1 : weight === 0.35 ? 0.85 : 0.7;
 
     const next = { crash: pendingCrash, shift: 0, mutes: new Set(), fill: null, fillStart: BAR };
     pendingCrash = false;
+
+    // Slow grooves: a crash at the top of the 8-bar phrase more often than not,
+    // sometimes halfway through, rarely elsewhere. Never two bars running, so it can ring out.
+    if (slow && barIndex - lastCrashBar <= 1) next.crash = false;
+    if (slow && !next.crash && barIndex - lastCrashBar > 1) {
+      const p = pos === 0 ? 0.5 : pos === 4 ? 0.3 : 0.03 + 0.08 * a;
+      next.crash = chance(p);
+    }
+    if (next.crash) lastCrashBar = barIndex;
 
     if (chance(Math.min(cap, a * 2.2 - (1 - weight) * 1.4))) {
       const len = weighted([
@@ -234,6 +249,7 @@ export function createPerformer(pattern, rnd = Math.random) {
       next.fillStart = BAR - len;
       let crashChance = len < BEAT ? 0.03 : 0.1 + 0.35 * (len / BAR) + (pos === 7 ? 0.2 : 0);
       if (!acoustic) crashChance *= 0.5;
+      if (slow) crashChance = Math.min(0.9, crashChance * 1.4);
       pendingCrash = chance(crashChance);
     }
 
@@ -439,7 +455,7 @@ export function createPerformer(pattern, rnd = Math.random) {
       const s = step % BAR;
       if (s === 0) {
         barIndex++;
-        plan = planBar(a);
+        plan = planBar(a, bpm);
       }
 
       let steps = baseBeat(s);
@@ -460,7 +476,11 @@ export function createPerformer(pattern, rnd = Math.random) {
         if (!steps[0].some((h) => h.voice === 'kick')) steps[0].push(hit('kick', 1));
         if (plan.crash) {
           steps[0] = steps[0].filter((h) => !HATS.has(h.voice));
-          steps[0].push(hit('crash', 0.85));
+          const long = acoustic && bpm < SLOW_CRASH_BPM;
+          // Usually the other cymbal from last time, so a phrase hears both.
+          lastCymbal = chance(0.65) ? 3 - lastCymbal : lastCymbal;
+          const voice = (long ? 'crashLong' : 'crash') + (lastCymbal === 2 ? '2' : '');
+          steps[0].push(hit(voice, long ? 0.92 : 0.85));
         }
       }
 
