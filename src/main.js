@@ -2,6 +2,7 @@ import { createAudio } from './audio.js';
 import { createClock } from './clock.js';
 import { generatePattern } from './pattern.js';
 import { createPerformer } from './performer.js';
+import { createRepeatPlanner, repeatEvent } from './repeater.js';
 
 const state = {
   bpm: 110,
@@ -26,6 +27,8 @@ let clock = null;
 let performer = null;
 let beat = null; // the four steps currently being played
 let regenerate = false; // new groove at the next loop start
+const repeats = createRepeatPlanner();
+let repeatPlan = null; // beat repeat planned for the current bar
 
 function ensureAudio() {
   if (audio) return;
@@ -50,6 +53,8 @@ function onStep(step, time, stepDur) {
     newGroove();
   }
   if (step % 4 === 0) beat = performer.beat(step, state.adLib, state.bpm);
+  if (step % 16 === 0) repeatPlan = repeats.planBar(state.adLib);
+  if (repeatPlan && step % 16 === repeatPlan.start) audio.repeat(repeatEvent(repeatPlan, time, stepDur));
   for (const hit of beat[step % 4]) {
     audio.trigger(hit.voice, time + hit.offset * stepDur + hit.shift, hit.vel);
   }
@@ -70,6 +75,7 @@ async function toggle() {
   ensureAudio();
   if (clock.playing) {
     clock.stop();
+    audio.clearRepeat();
   } else {
     await audio.ctx.resume();
     regenerate = false;

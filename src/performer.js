@@ -8,6 +8,7 @@
 //   stretch  0.50 ->  longer and more frequent fills, backbeat displacement,
 //                     hat <-> ride switching, bursts of space or double-time
 //   glitch   0.80 ->  stutters, ratchets, dropped beats, metric displacement
+//                     (plus audio beat repeat on the mix, see repeater.js)
 //
 // Acoustic patterns get a drummer's vocabulary and human timing; electronic
 // patterns get a machine's (mutes, rolls, retriggers) and stay on the grid.

@@ -17,6 +17,7 @@ Then open http://localhost:5173. No build step and no dependencies.
 - `src/styles.js` – groove rules per kit and tempo
 - `src/pattern.js` – pattern generator
 - `src/performer.js` – ad lib: live variations and fills
+- `src/repeater.js`, `src/repeater-worklet.js` – beat repeat on the mix, top 20 % of ad lib
 - `src/electronic.js` – synthesised drum machine voices
 - `src/acoustic.js` – sampled kit and its processing chain
 - `tools/fetch_samples.py` – re-downloads the sample set into `samples/`

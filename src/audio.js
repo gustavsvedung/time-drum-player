@@ -1,9 +1,10 @@
 // Audio graph: two kit engines on separate buses, crossfaded by the kit switch,
-// into a shared master limiter. Every hit goes to both engines so switching
+// into the beat repeater and a shared master limiter. Every hit goes to both engines so switching
 // mid-pattern is seamless.
 
 import { createAcousticKit } from './acoustic.js';
 import { createElectronicKit } from './electronic.js';
+import { createRepeater } from './repeater.js';
 
 const FADE = 0.03; // seconds, kit crossfade time constant
 
@@ -18,7 +19,8 @@ export function createAudio() {
   limiter.ratio.value = 12;
   limiter.attack.value = 0.003;
   limiter.release.value = 0.12;
-  master.connect(limiter).connect(ctx.destination);
+  limiter.connect(ctx.destination);
+  const repeater = createRepeater(ctx, master, limiter);
 
   const buses = {
     electronic: ctx.createGain(),
@@ -58,6 +60,9 @@ export function createAudio() {
       kit = name;
       applyKit();
     },
+    /** Beat repeat event from repeatEvent() */
+    repeat(event) { repeater.play(event); },
+    clearRepeat() { repeater.clear(); },
     trigger(voice, time, vel) {
       for (const engine of Object.values(engines)) {
         if (engine) engine.trigger(voice, time, vel);
