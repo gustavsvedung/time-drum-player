@@ -6,7 +6,8 @@ import { createPerformer } from './performer.js';
 const state = {
   bpm: 110,
   adLib: 0, // 0..1, read live by the performer
-  kit: 'electronic',
+  kit: 'acoustic',
+  simple: false, // keep it simple: plain, common grooves
   pattern: null,
 };
 
@@ -16,6 +17,7 @@ const el = {
   bpm: document.getElementById('bpm'),
   adLib: document.getElementById('adlib'),
   kit: document.getElementById('kit'),
+  simple: document.getElementById('simple'),
   led: document.getElementById('led'),
 };
 
@@ -23,6 +25,7 @@ let audio = null;
 let clock = null;
 let performer = null;
 let beat = null; // the four steps currently being played
+let regenerate = false; // new groove at the next loop start
 
 function ensureAudio() {
   if (audio) return;
@@ -35,7 +38,17 @@ function ensureAudio() {
   });
 }
 
+function newGroove() {
+  state.pattern = generatePattern({ kit: state.kit, bpm: state.bpm, simple: state.simple });
+  performer = createPerformer(state.pattern);
+  console.info(`time: ${state.kit}${state.simple ? ' (simple)' : ''} / ${state.pattern.style}, swing ${state.pattern.swing.toFixed(2)}`);
+}
+
 function onStep(step, time, stepDur) {
+  if (regenerate && step % state.pattern.length === 0) {
+    regenerate = false;
+    newGroove();
+  }
   if (step % 4 === 0) beat = performer.beat(step, state.adLib, state.bpm);
   for (const hit of beat[step % 4]) {
     audio.trigger(hit.voice, time + hit.offset * stepDur + hit.shift, hit.vel);
@@ -59,9 +72,8 @@ async function toggle() {
     clock.stop();
   } else {
     await audio.ctx.resume();
-    state.pattern = generatePattern({ kit: state.kit, bpm: state.bpm });
-    performer = createPerformer(state.pattern);
-    console.info(`time: ${state.kit} / ${state.pattern.style}, swing ${state.pattern.swing.toFixed(2)}`);
+    regenerate = false;
+    newGroove();
     clock.start();
   }
   el.start.setAttribute('aria-pressed', String(clock.playing));
@@ -90,6 +102,13 @@ el.kit.addEventListener('click', () => {
   state.kit = state.kit === 'electronic' ? 'acoustic' : 'electronic';
   el.kit.setAttribute('aria-checked', String(state.kit === 'electronic'));
   audio?.setKit(state.kit);
+});
+
+// Takes effect at the start of the next loop while playing, or on the next start.
+el.simple.addEventListener('click', () => {
+  state.simple = !state.simple;
+  el.simple.setAttribute('aria-checked', String(state.simple));
+  if (clock?.playing) regenerate = true;
 });
 
 document.addEventListener('keydown', (e) => {

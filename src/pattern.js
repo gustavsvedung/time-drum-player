@@ -39,7 +39,7 @@ function tempoFit(style, bpm) {
   return Math.max(0, 1 - outside / TEMPO_FALLOFF);
 }
 
-const lastStyle = { acoustic: null, electronic: null };
+const lastStyle = {};
 
 function pickStyle(kit, bpm, rnd) {
   const styles = STYLES[kit];
@@ -71,11 +71,12 @@ function sampleLayer(layer, bpm, rnd) {
 }
 
 /**
- * @param {{ kit: 'acoustic' | 'electronic', bpm: number }} context
+ * @param {{ kit: 'acoustic' | 'electronic', bpm: number, simple?: boolean }} context
+ *   simple: pick from the plain, common grooves (keep it simple)
  * @param {() => number} [rnd]
  */
-export function generatePattern({ kit, bpm }, rnd = Math.random) {
-  const style = pickStyle(kit, bpm, rnd);
+export function generatePattern({ kit, bpm, simple = false }, rnd = Math.random) {
+  const style = pickStyle(simple ? `${kit}Simple` : kit, bpm, rnd);
 
   /** @type {Record<string, number[]>} */
   const grid = {};

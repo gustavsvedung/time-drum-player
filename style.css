@@ -203,6 +203,13 @@ input[type="range"]::-moz-range-thumb {
 
 .switch[aria-checked="true"] .knob { transform: translateX(26px); }
 
+/* on/off switch: the track fills when it's on */
+.toggle { margin-top: -10px; }
+.toggle .track { transition: background 0.15s; }
+.toggle[aria-checked="true"] .label { color: var(--ink); }
+.toggle[aria-checked="true"] .track { background: var(--ink); }
+.toggle[aria-checked="true"] .knob { background: var(--panel); }
+
 /* ---- start / stop ---- */
 
 .start {

@@ -24,6 +24,10 @@
 const BACKBEAT = '....X.......X...';
 const EIGHTHS = 'X.x.X.x.X.x.X.x.';
 const TIMEKEEPER = [['hatClosed', 3], ['ride', 1]];
+const QUARTERS = 'x...x...x...x...';
+const SOFT_EIGHTHS = 'x.-.x.-.x.-.x.-.';
+const ONE_THREE = 'X.......x.......';
+const FOUR = 'X...x...x...x...';
 
 export const STYLES = {
   acoustic: [
@@ -334,6 +338,98 @@ export const STYLES = {
         { voice: 'rim', chance: 0.35, rows: ['..x..x..x..x..x.', '...x..x...x..x..'] },
         { voice: 'hatClosed', rows: ['..x...x...x...x.', 'x.x.x.x.x.x.x.x.', '-.x.-.x.-.x.-.x.'] },
         { voice: 'hatOpen', chance: 0.35, rows: ['..x...x...x...x.', '..............x.'] },
+      ],
+    },
+  ],
+
+  // Keep it simple: plain, common grooves. Kick on 1 and 3, backbeat on 2 and 4,
+  // straight time, no ghost notes. Quarter-note hats are favoured at slow tempos.
+  acousticSimple: [
+    {
+      name: 'halftime plain',
+      bpm: [40, 74],
+      swing: [0, 0.03],
+      layBack: { snare: 0.05, rim: 0.05 },
+      layers: [
+        { voice: 'kick', vary: 0.2, rows: ['X...............', 'X...............', 'X.........x.....'] },
+        { voice: [['snare', 1], ['rim', 1]], rows: ['........X.......'] },
+        { voice: [['hatClosed', 4], ['ride', 1]], rows: [QUARTERS, QUARTERS, SOFT_EIGHTHS] },
+      ],
+    },
+    {
+      name: 'plain',
+      bpm: [44, 96],
+      swing: [0, 0.03],
+      layBack: { snare: 0.04, rim: 0.04 },
+      layers: [
+        { voice: 'kick', vary: 0.25, rows: [ONE_THREE, ONE_THREE, 'X.......x.x.....', 'X.........x.....'] },
+        { voice: [['snare', 3], ['rim', 2]], rows: [BACKBEAT] },
+        { voice: [['hatClosed', 4], ['ride', 1]], rows: [QUARTERS, QUARTERS, [SOFT_EIGHTHS, 92]] },
+      ],
+    },
+    {
+      name: 'straight',
+      bpm: [76, 180],
+      swing: [0, 0.03],
+      layBack: { snare: 0.03 },
+      layers: [
+        { voice: 'kick', vary: 0.25, rows: [ONE_THREE, ONE_THREE, 'X.......x.x.....', 'X.....x.x.......'] },
+        { voice: 'snare', rows: [BACKBEAT] },
+        { voice: [['hatClosed', 4], ['ride', 1]], rows: [EIGHTHS, 'x.x.x.x.x.x.x.x.', [QUARTERS, 104]] },
+        { voice: 'hatOpen', chance: 0.15, bar: 2, rows: ['..............x.'] },
+      ],
+    },
+    {
+      name: 'four on the floor',
+      bpm: [92, 150],
+      swing: [0, 0.02],
+      layers: [
+        { voice: 'kick', rows: [FOUR] },
+        { voice: 'snare', rows: [BACKBEAT] },
+        { voice: 'hatClosed', rows: ['x.x.x.x.x.x.x.x.', EIGHTHS, [QUARTERS, 112]] },
+      ],
+    },
+  ],
+
+  electronicSimple: [
+    {
+      name: 'slow box',
+      bpm: [40, 90],
+      swing: [0, 0.03],
+      layers: [
+        { voice: 'kick', vary: 0.2, rows: [ONE_THREE, ONE_THREE, 'X.........x.....'] },
+        { voice: [['snare', 2], ['clap', 1], ['rim', 2]], rows: [BACKBEAT] },
+        { voice: 'hatClosed', rows: [QUARTERS, QUARTERS, 'x.x.x.x.x.x.x.x.'] },
+      ],
+    },
+    {
+      name: 'basic',
+      bpm: [70, 140],
+      swing: [0, 0.03],
+      layers: [
+        { voice: 'kick', vary: 0.25, rows: [ONE_THREE, ONE_THREE, 'X.......x.x.....'] },
+        { voice: [['snare', 2], ['clap', 2], ['rim', 1]], rows: [BACKBEAT] },
+        { voice: 'hatClosed', rows: ['x.x.x.x.x.x.x.x.', EIGHTHS, [QUARTERS, 104]] },
+      ],
+    },
+    {
+      name: 'floor',
+      bpm: [100, 150],
+      swing: [0, 0],
+      layers: [
+        { voice: 'kick', rows: [FOUR] },
+        { voice: [['clap', 2], ['snare', 1]], rows: [BACKBEAT] },
+        { voice: 'hatClosed', rows: ['..x...x...x...x.', 'x.x.x.x.x.x.x.x.'] },
+      ],
+    },
+    {
+      name: 'fast basic',
+      bpm: [130, 180],
+      swing: [0, 0],
+      layers: [
+        { voice: 'kick', rows: [ONE_THREE, 'X.......x.x.....'] },
+        { voice: 'snare', rows: [BACKBEAT] },
+        { voice: 'hatClosed', rows: ['x.x.x.x.x.x.x.x.', EIGHTHS] },
       ],
     },
   ],
